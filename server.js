@@ -13,23 +13,26 @@ app.post('/api/download', async (req, res) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0'
       },
       body: JSON.stringify({
         url: url,
         videoQuality: quality || '720',
-        filenameStyle: 'pretty'
+        filenameStyle: 'pretty',
+        downloadMode: 'auto'
       })
     });
 
     const data = await response.json();
+    console.log('Cobalt response:', JSON.stringify(data));
 
-    if (data.status === 'redirect' || data.status === 'stream') {
+    if (data.url) {
       res.json({ success: true, downloadUrl: data.url });
-    } else if (data.status === 'picker') {
+    } else if (data.picker) {
       res.json({ success: true, downloadUrl: data.picker[0].url });
     } else {
-      res.json({ success: false, error: 'Download link nahi mila' });
+      res.json({ success: false, error: JSON.stringify(data) });
     }
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
