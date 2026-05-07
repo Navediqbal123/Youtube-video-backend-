@@ -9,37 +9,27 @@ app.post('/api/download', async (req, res) => {
   const { url, quality } = req.body;
 
   try {
-    const response = await fetch('https://api.cobalt.tools/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0'
-      },
-      body: JSON.stringify({
-        url: url,
-        videoQuality: quality || '720',
-        filenameStyle: 'pretty',
-        downloadMode: 'auto'
-      })
-    });
+    const response = await fetch(
+      `https://youtube-media-downloader.p.rapidapi.com/v2/video/details?videoUrl=${encodeURIComponent(url)}`,
+      {
+        method: 'GET',
+        headers: {
+          'x-rapidapi-host': 'youtube-media-downloader.p.rapidapi.com',
+          'x-rapidapi-key': 'f3ca2a2633mshd2dc3580e93393bp1edeedjsnea3964232839'
+        }
+      }
+    );
 
-    const text = await response.text();
-    console.log('Raw Cobalt response:', text);
+    const data = await response.json();
+    console.log('Response:', JSON.stringify(data).substring(0, 300));
 
-    const data = JSON.parse(text);
-
-    if (data.url) {
-      res.json({ success: true, downloadUrl: data.url });
-    } else if (data.picker && data.picker.length > 0) {
-      res.json({ success: true, downloadUrl: data.picker[0].url });
-    } else if (data.status === 'error') {
-      res.json({ success: false, error: data.error?.code || 'Cobalt error' });
+    const videos = data?.videos?.items;
+    if (videos && videos.length > 0) {
+      res.json({ success: true, downloadUrl: videos[0].url });
     } else {
-      res.json({ success: false, error: 'No URL: ' + text });
+      res.json({ success: false, error: JSON.stringify(data).substring(0, 200) });
     }
   } catch (err) {
-    console.error('Error:', err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 });
