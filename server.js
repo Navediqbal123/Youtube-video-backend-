@@ -24,17 +24,22 @@ app.post('/api/download', async (req, res) => {
       })
     });
 
-    const data = await response.json();
-    console.log('Cobalt response:', JSON.stringify(data));
+    const text = await response.text();
+    console.log('Raw Cobalt response:', text);
+
+    const data = JSON.parse(text);
 
     if (data.url) {
       res.json({ success: true, downloadUrl: data.url });
-    } else if (data.picker) {
+    } else if (data.picker && data.picker.length > 0) {
       res.json({ success: true, downloadUrl: data.picker[0].url });
+    } else if (data.status === 'error') {
+      res.json({ success: false, error: data.error?.code || 'Cobalt error' });
     } else {
-      res.json({ success: false, error: JSON.stringify(data) });
+      res.json({ success: false, error: 'No URL: ' + text });
     }
   } catch (err) {
+    console.error('Error:', err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 });
