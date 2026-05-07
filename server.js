@@ -10,21 +10,13 @@ app.post('/api/download', async (req, res) => {
 
   try {
     const response = await fetch(
-      `https://y2mate-youtube-video-and-mp3-downloader.p.rapidapi.com/rapidapi-y2mate/?url=${encodeURIComponent(url)}&proxy=0`,
-      {
-        method: 'GET',
-        headers: {
-          'x-rapidapi-host': 'y2mate-youtube-video-and-mp3-downloader.p.rapidapi.com',
-          'x-rapidapi-key': process.env.RAPIDAPI_KEY
-        }
-      }
+      `https://api.vevioz.com/api/button/mp4/${encodeURIComponent(url)}`
     );
-
     const data = await response.json();
     console.log('Response:', JSON.stringify(data).substring(0, 300));
 
-    if (data.mp4) {
-      res.json({ success: true, downloadUrl: data.mp4 });
+    if (data.url) {
+      res.json({ success: true, downloadUrl: data.url });
     } else {
       res.json({ success: false, error: JSON.stringify(data).substring(0, 200) });
     }
